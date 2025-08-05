@@ -49,6 +49,7 @@ func main() {
 	http.HandleFunc("/assets/", viteAssets.ServeAssets)
 
 	// API
+	http.HandleFunc("/api/google", api.SearchWithParser(search.GetGoogleResults))
 	http.HandleFunc("/api/ddg", api.SearchWithParser(search.GetDDGResults))
 	http.HandleFunc("/api/brave", api.SearchWithParser(search.GetBraveResults))
 	http.HandleFunc("/api/wallpaper", api.WallpaperHandler)
