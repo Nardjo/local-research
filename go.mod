@@ -1,14 +1,15 @@
 module grafikart/grafisearch
 
-go 1.23
+go 1.23.0
 
-toolchain go1.23.5
+toolchain go1.24.5
 
 require (
 	github.com/PuerkitoBio/goquery v1.10.1
 	github.com/a-h/templ v0.3.819
 	github.com/beevik/etree v1.4.1
 	github.com/fatih/color v1.18.0
+	golang.org/x/text v0.26.0
 )
 
 require (

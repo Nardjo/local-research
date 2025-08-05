@@ -1,9 +1,9 @@
 import { useSignal } from "@preact/signals";
+import { type ComponentChild } from "preact";
 import { type LocationHook } from "preact-iso";
 import { useEffect } from "preact/hooks";
 import { withViewTransition } from "../functions/dom.ts";
 import { jsonFetch } from "../functions/http.ts";
-import { type ComponentChild } from "preact";
 import { matchMiddlewares } from "../functions/middleware/middlewares.tsx";
 
 type SearchResultLink = {
@@ -66,7 +66,7 @@ export function useSearchResults(location: LocationHook) {
         query: { q: query },
         signal,
       }).then(pushColumn),
-      jsonFetch<SearchResult[]>("/api/brave", {
+      jsonFetch<SearchResult[]>("/api/google", {
         query: { q: query },
         signal,
       }).then(pushColumn),
