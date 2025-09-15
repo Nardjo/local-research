@@ -1,5 +1,5 @@
 {
-  "name": "prepmaverick",
+  "name": "grafisearch",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,17 +11,17 @@
     "check": "tsc -b"
   },
   "dependencies": {
-    "@preact/signals": "^2.0.2",
+    "@preact/signals": "^2.3.1",
     "clsx": "^2.1.1",
-    "preact": "^10.26.4",
-    "preact-iso": "^2.9.1"
+    "preact": "^10.27.2",
+    "preact-iso": "^2.10.0"
   },
   "devDependencies": {
-    "@preact/preset-vite": "^2.10.1",
+    "@preact/preset-vite": "^2.10.2",
     "@types/dom-view-transitions": "^1.0.6",
-    "prettier": "^3.5.3",
-    "typescript": "^5.8.2",
-    "vite": "^6.2.4",
-    "vitest": "^3.1.1"
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.5",
+    "vitest": "^3.2.4"
   }
 }
