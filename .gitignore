@@ -2,6 +2,7 @@ templates/*.go
 templates/*.txt
 grafisearch
 public/assets
+*.tsbuildinfo
 
 # Logs
 logs
