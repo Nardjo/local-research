@@ -26,6 +26,7 @@ const baseTitle = "GrafiSearch";
 export function useSearchResults(location: LocationHook) {
   const columns = useSignal<SearchResult[][]>([]);
   const query = location.query.q;
+  const engine = location.query.engine;
   const isFetching = useSignal(false);
   const component = useSignal<ComponentChild>(null);
 
@@ -61,16 +62,17 @@ export function useSearchResults(location: LocationHook) {
     const signal = abortController.signal;
     isFetching.value = true;
 
-    Promise.allSettled([
-      jsonFetch<SearchResult[]>("/api/ddg", {
+    // Determine which engines to use based on query parameter
+    const engines = engine === "youtube" ? ["youtube"] : ["ddg", "brave"];
+    const promises = engines.map(eng => {
+      const endpoint = `/api/${eng}`;
+      return jsonFetch<SearchResult[]>(endpoint, {
         query: { q: query },
         signal,
-      }).then(pushColumn),
-      jsonFetch<SearchResult[]>("/api/brave", {
-        query: { q: query },
-        signal,
-      }).then(pushColumn),
-    ]).then(() => {
+      }).then(pushColumn);
+    });
+
+    Promise.allSettled(promises).then(() => {
       isFetching.value = false;
     });
 
