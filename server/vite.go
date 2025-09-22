@@ -2,7 +2,7 @@ package server
 
 import (
 	"fmt"
-	"grafikart/grafisearch/utils"
+	"local-research/utils"
 	"io/fs"
 	"net/http"
 	"strings"

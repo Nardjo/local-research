@@ -3,7 +3,7 @@
 <plist version="1.0">
     <dict>
         <key>Label</key>
-        <string>com.grafikart.grafisearch</string>
+        <string>com.local-research</string>
 
         <key>RunAtLoad</key>
         <true/>
@@ -15,13 +15,13 @@
         <array>
           <string>{{ .Path }}</string>
         </array>
-        
+
         <!--
         <key>StandardOutPath</key>
-        <string>/Users/jonathan/Sites/Lab/GrafiSearch/grafisearch.log</string>
+        <string>/Users/jonathan/Sites/Lab/GrafiSearch/local-research.log</string>
 
         <key>StandardErrorPath</key>
-        <string>/Users/jonathan/Sites/Lab/GrafiSearch/grafisearch.error.log</string>
+        <string>/Users/jonathan/Sites/Lab/GrafiSearch/local-research.error.log</string>
         -->
     </dict>
 </plist>

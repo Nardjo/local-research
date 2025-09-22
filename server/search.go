@@ -2,8 +2,8 @@ package server
 
 import (
 	"fmt"
-	"grafikart/grafisearch/templates"
-	"grafikart/grafisearch/utils"
+	"local-research/templates"
+	"local-research/utils"
 	"net/http"
 	"net/url"
 	"strings"

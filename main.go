@@ -4,10 +4,10 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	"grafikart/grafisearch/search"
-	"grafikart/grafisearch/server"
-	"grafikart/grafisearch/server/api"
-	"grafikart/grafisearch/utils"
+	"local-research/search"
+	"local-research/server"
+	"local-research/server/api"
+	"local-research/utils"
 	"io/fs"
 	"log"
 	"net/http"
@@ -17,10 +17,10 @@ import (
 //go:embed all:public
 var assets embed.FS
 
-//go:embed install/com.grafisearch.plist
+//go:embed install/com.local-research.plist
 var macOSService string
 
-//go:embed install/grafisearch.service
+//go:embed install/local-research.service
 var linuxService string
 
 const port = ":8042"
