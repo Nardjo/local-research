@@ -1,12 +1,12 @@
 package search
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"local-research/utils"
 	"net/url"
 	"strings"
-
-	"github.com/PuerkitoBio/goquery"
 )
 
 func GetYouTubeResults(q string) ([]SearchResult, error) {
@@ -19,141 +19,231 @@ func GetYouTubeResults(q string) ([]SearchResult, error) {
 
 	defer res.Body.Close()
 
-	doc, err := goquery.NewDocumentFromReader(res.Body)
-
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	results := []SearchResult{}
-	urls := make(map[string]int)
+	return parseYouTubeResultsFromHTML(string(body))
+}
 
-	// Find video results using YouTube's structure
-	doc.Find("ytd-video-renderer, ytd-rich-item-renderer, .ytd-video-renderer, .ytd-rich-item-renderer").Each(func(i int, item *goquery.Selection) {
-		var title, videoURL, channelName, duration, views, desc string
-
-		// Try to find the video link
-		if a := item.Find("a#video-title, a.yt-simple-endpoint").First(); a.Length() > 0 {
-			if href, exists := a.Attr("href"); exists {
-				if strings.HasPrefix(href, "/watch") {
-					videoURL = "https://www.youtube.com" + href
-				} else if strings.HasPrefix(href, "http") {
-					videoURL = href
-				}
-			}
-			title = strings.TrimSpace(a.Text())
-		}
-
-		// Alternative title selector
-		if title == "" {
-			if t := item.Find("#video-title, .ytd-video-renderer #video-title, h3.title").First(); t.Length() > 0 {
-				title = strings.TrimSpace(t.Text())
-			}
-		}
-
-		// Find channel name
-		if channel := item.Find("#channel-name, .ytd-channel-name, .ytd-video-renderer #channel-name").First(); channel.Length() > 0 {
-			channelName = strings.TrimSpace(channel.Text())
-		}
-
-		// Find duration
-		if dur := item.Find("#text.ytd-thumbnail-overlay-time-status-renderer, .ytd-thumbnail-overlay-time-status-renderer #text").First(); dur.Length() > 0 {
-			duration = strings.TrimSpace(dur.Text())
-		}
-
-		// Find views
-		if viewCount := item.Find("#metadata-line span:contains('views'), .ytd-video-meta-block span:contains('views')").First(); viewCount.Length() > 0 {
-			views = strings.TrimSpace(viewCount.Text())
-		}
-
-		// Find description snippet
-		if descElement := item.Find("#description-text, .ytd-video-renderer #description-text, .metadata-snippet-container").First(); descElement.Length() > 0 {
-			desc = strings.TrimSpace(descElement.Text())
-		}
-
-		// Process result if we have minimum required data
-		if videoURL != "" && title != "" {
-			_, urlAlreadyListed := urls[videoURL]
-			if !urlAlreadyListed {
-				urls[videoURL] = 1
-
-				// Build description with metadata
-				fullDesc := desc
-				if channelName != "" {
-					if fullDesc != "" {
-						fullDesc = channelName + " • " + fullDesc
-					} else {
-						fullDesc = channelName
-					}
-				}
-				if views != "" {
-					if fullDesc != "" {
-						fullDesc += " • " + views
-					} else {
-						fullDesc = views
-					}
-				}
-				if duration != "" {
-					if fullDesc != "" {
-						fullDesc += " • " + duration
-					} else {
-						fullDesc = duration
-					}
-				}
-
-				result := SearchResult{
-					URL:      videoURL,
-					Title:    title,
-					Desc:     fullDesc,
-					Domain:   "www.youtube.com",
-					SiteName: "YouTube",
-					Author:   channelName,
-				}
-				results = append(results, result)
-			}
-		}
-	})
-
-	// If no results found with modern selectors, try legacy approach
-	if len(results) == 0 {
-		doc.Find("a[href^='/watch']").Each(func(i int, a *goquery.Selection) {
-			href, exists := a.Attr("href")
-			if !exists || !strings.HasPrefix(href, "/watch") {
-				return
-			}
-
-			videoURL := "https://www.youtube.com" + href
-			_, urlAlreadyListed := urls[videoURL]
-			if urlAlreadyListed {
-				return
-			}
-
-			// Find the video container
-			container := a.Closest(".video-list-item, .yt-lockup, .ytd-video-renderer")
-			if container.Length() == 0 {
-				container = a.Parent()
-			}
-
-			title := strings.TrimSpace(a.Text())
-			if title == "" {
-				if t := container.Find(".title, .video-title, h3").First(); t.Length() > 0 {
-					title = strings.TrimSpace(t.Text())
-				}
-			}
-
-			if title != "" {
-				urls[videoURL] = 1
-				result := SearchResult{
-					URL:      videoURL,
-					Title:    title,
-					Desc:     "",
-					Domain:   "www.youtube.com",
-					SiteName: "YouTube",
-				}
-				results = append(results, result)
-			}
-		})
+func parseYouTubeResultsFromHTML(html string) ([]SearchResult, error) {
+	data, ok := extractYouTubeInitialData(html)
+	if !ok {
+		return []SearchResult{}, nil
 	}
 
+	var payload any
+	if err := json.Unmarshal(data, &payload); err != nil {
+		return nil, err
+	}
+
+	results := []SearchResult{}
+	seen := map[string]bool{}
+	collectYouTubeResults(payload, &results, seen)
+
 	return results, nil
+}
+
+func extractYouTubeInitialData(html string) ([]byte, bool) {
+	for _, marker := range []string{
+		"var ytInitialData =",
+		"var ytInitialData=",
+		"ytInitialData =",
+		"ytInitialData=",
+	} {
+		markerIndex := strings.Index(html, marker)
+		if markerIndex == -1 {
+			continue
+		}
+
+		jsonStartOffset := strings.Index(html[markerIndex:], "{")
+		if jsonStartOffset == -1 {
+			continue
+		}
+
+		jsonStart := markerIndex + jsonStartOffset
+		if jsonEnd, ok := findJSONEnd(html, jsonStart); ok {
+			return []byte(html[jsonStart : jsonEnd+1]), true
+		}
+	}
+
+	return nil, false
+}
+
+func findJSONEnd(value string, start int) (int, bool) {
+	depth := 0
+	inString := false
+	escaped := false
+
+	for i := start; i < len(value); i++ {
+		character := value[i]
+
+		if escaped {
+			escaped = false
+			continue
+		}
+
+		if inString {
+			if character == '\\' {
+				escaped = true
+				continue
+			}
+			if character == '"' {
+				inString = false
+			}
+			continue
+		}
+
+		switch character {
+		case '"':
+			inString = true
+		case '{':
+			depth++
+		case '}':
+			depth--
+			if depth == 0 {
+				return i, true
+			}
+		}
+	}
+
+	return 0, false
+}
+
+func collectYouTubeResults(node any, results *[]SearchResult, seen map[string]bool) {
+	switch value := node.(type) {
+	case map[string]any:
+		if renderer, ok := value["videoRenderer"].(map[string]any); ok {
+			if result, ok := parseVideoRenderer(renderer); ok && !seen[result.URL] {
+				seen[result.URL] = true
+				*results = append(*results, result)
+			}
+		}
+
+		for _, child := range value {
+			collectYouTubeResults(child, results, seen)
+		}
+	case []any:
+		for _, child := range value {
+			collectYouTubeResults(child, results, seen)
+		}
+	}
+}
+
+func parseVideoRenderer(renderer map[string]any) (SearchResult, bool) {
+	videoID, ok := renderer["videoId"].(string)
+	if !ok || videoID == "" {
+		return SearchResult{}, false
+	}
+
+	title := youtubeText(renderer["title"])
+	if title == "" {
+		return SearchResult{}, false
+	}
+
+	author := firstText(
+		youtubeText(renderer["ownerText"]),
+		youtubeText(renderer["shortBylineText"]),
+		youtubeText(renderer["longBylineText"]),
+	)
+	views := firstText(
+		youtubeText(renderer["viewCountText"]),
+		youtubeText(renderer["shortViewCountText"]),
+	)
+	published := youtubeText(renderer["publishedTimeText"])
+	duration := youtubeText(renderer["lengthText"])
+	description := firstText(
+		youtubeText(renderer["descriptionSnippet"]),
+		youtubeSnippetText(renderer["detailedMetadataSnippets"]),
+	)
+
+	return SearchResult{
+		URL:      "https://www.youtube.com/watch?v=" + videoID,
+		Title:    title,
+		Desc:     joinTextParts(author, views, published, duration, description),
+		Domain:   "www.youtube.com",
+		SiteName: "YouTube",
+		Author:   author,
+	}, true
+}
+
+func youtubeSnippetText(value any) string {
+	snippets, ok := value.([]any)
+	if !ok || len(snippets) == 0 {
+		return ""
+	}
+
+	for _, snippet := range snippets {
+		snippetMap, ok := snippet.(map[string]any)
+		if !ok {
+			continue
+		}
+		text := youtubeText(snippetMap["snippetText"])
+		if text != "" {
+			return text
+		}
+	}
+
+	return ""
+}
+
+func youtubeText(value any) string {
+	switch typedValue := value.(type) {
+	case string:
+		return cleanYouTubeText(typedValue)
+	case map[string]any:
+		if text, ok := typedValue["simpleText"].(string); ok {
+			return cleanYouTubeText(text)
+		}
+		if text, ok := typedValue["content"].(string); ok {
+			return cleanYouTubeText(text)
+		}
+		if runs, ok := typedValue["runs"].([]any); ok {
+			parts := []string{}
+			for _, run := range runs {
+				runMap, ok := run.(map[string]any)
+				if !ok {
+					continue
+				}
+				if text, ok := runMap["text"].(string); ok {
+					parts = append(parts, text)
+				}
+			}
+			return cleanYouTubeText(strings.Join(parts, ""))
+		}
+	case []any:
+		parts := []string{}
+		for _, item := range typedValue {
+			if text := youtubeText(item); text != "" {
+				parts = append(parts, text)
+			}
+		}
+		return cleanYouTubeText(strings.Join(parts, " "))
+	}
+
+	return ""
+}
+
+func cleanYouTubeText(value string) string {
+	return strings.Join(strings.Fields(value), " ")
+}
+
+func firstText(values ...string) string {
+	for _, value := range values {
+		if value != "" {
+			return value
+		}
+	}
+	return ""
+}
+
+func joinTextParts(values ...string) string {
+	parts := []string{}
+	for _, value := range values {
+		if value != "" {
+			parts = append(parts, value)
+		}
+	}
+	return strings.Join(parts, " - ")
 }

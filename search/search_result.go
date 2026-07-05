@@ -13,4 +13,8 @@ type SearchResult struct {
 	SiteName string `json:"siteName,omitempty"`
 	Author   string `json:"author,omitempty"`
 	Related  []Link `json:"related,omitempty"`
+	Image    string `json:"image,omitempty"`
+	Thumb    string `json:"thumb,omitempty"`
+	Width    int    `json:"width,omitempty"`
+	Height   int    `json:"height,omitempty"`
 }

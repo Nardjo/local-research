@@ -4,11 +4,11 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	"io/fs"
 	"local-research/search"
 	"local-research/server"
 	"local-research/server/api"
 	"local-research/utils"
-	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -45,11 +45,13 @@ func main() {
 	publicServer := http.FileServer(http.FS(publicFS))
 
 	// Static Assets
+	http.HandleFunc("/health", server.HealthHandler)
 	http.HandleFunc("/sse", server.SSEHandler)
 
 	// API
 	http.HandleFunc("/api/google", api.SearchWithParser(search.GetGoogleResults))
 	http.HandleFunc("/api/ddg", api.SearchWithParser(search.GetDDGResults))
+	http.HandleFunc("/api/images", api.SearchWithParser(search.GetDDGImageResults))
 	http.HandleFunc("/api/startpage", api.SearchWithParser(search.GetStartpageResults))
 	http.HandleFunc("/api/youtube", api.SearchWithParser(search.GetYouTubeResults))
 	http.HandleFunc("/api/wallpaper", api.WallpaperHandler)

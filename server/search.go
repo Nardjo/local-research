@@ -13,6 +13,7 @@ var filterBangs = map[string]string{
 	"!r":  "site:reddit.com",
 	"!gr": "site:grafikart.fr",
 	"!i":  "site:stackoverflow.com OR site:github.com",
+	"!ia": "ia",
 }
 
 var redirectBangs = map[string]string{
@@ -30,7 +31,6 @@ var redirectBangs = map[string]string{
 	"!iad":  "https://www.phind.com/search?q=%s&c=&source=searchbox&init=true",
 	"!gmap": "https://www.google.fr/maps?hl=fr&q=%s",
 	"!img":  "https://duckduckgo.com/?q=%s&iax=images&ia=images",
-	"!ia":   "https://www.perplexity.ai/search/?q=%s",
 }
 
 func SearchHandler(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +48,8 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 
 func ReplaceFilterBangs(q string) string {
 	for bang, replace := range filterBangs {
-		if strings.HasPrefix(q, bang+" ") ||
+		if q == bang ||
+			strings.HasPrefix(q, bang+" ") ||
 			strings.HasSuffix(q, " "+bang) {
 			q = strings.ReplaceAll(q, bang, replace)
 		}

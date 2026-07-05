@@ -6,8 +6,34 @@ templ Layout(title string) {
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<meta name="color-scheme" content="dark light"/>
+			<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 			<link rel="icon" type="image/png" href="/favicon.png" />
 			<title>{ title }</title>
+			<script>
+				(() => {
+					const storageKey = "local-research-theme";
+					const preferences = ["system", "light", "dark"];
+					const root = document.documentElement;
+					const systemTheme = window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark";
+					let preference = "system";
+
+					try {
+						preference = localStorage.getItem(storageKey) || preference;
+					} catch {
+						preference = "system";
+					}
+
+					if (!preferences.includes(preference)) {
+						preference = "system";
+					}
+
+					const resolvedTheme = preference === "system" ? systemTheme : preference;
+					root.dataset.themePreference = preference;
+					root.dataset.theme = resolvedTheme;
+					root.style.colorScheme = resolvedTheme;
+				})();
+			</script>
 			if ctx.Value("assets") != nil {
 				@templ.Raw(ctx.Value("assets").(string))
 			}

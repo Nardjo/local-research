@@ -5,6 +5,7 @@ import { useEffect } from "preact/hooks";
 import { withViewTransition } from "../functions/dom.ts";
 import { jsonFetch } from "../functions/http.ts";
 import { matchMiddlewares } from "../functions/middleware/middlewares.tsx";
+import { getSearchScope } from "../functions/searchScopes.ts";
 
 type SearchResultLink = {
   title: string;
@@ -19,6 +20,10 @@ export type SearchResult = {
   author?: string;
   related?: SearchResultLink[];
   siteName?: string;
+  image?: string;
+  thumb?: string;
+  width?: number;
+  height?: number;
 };
 
 const baseTitle = "Research";
@@ -31,7 +36,7 @@ export type SearchColumn = {
 export function useSearchResults(location: LocationHook) {
   const columns = useSignal<SearchColumn[]>([]);
   const query = location.query.q;
-  const engine = location.query.engine;
+  const scope = getSearchScope(location.query.scope, location.query.engine);
   const isFetching = useSignal(false);
   const component = useSignal<ComponentChild>(null);
 
@@ -67,22 +72,26 @@ export function useSearchResults(location: LocationHook) {
     const signal = abortController.signal;
     isFetching.value = true;
 
-    // Determine which engines to use based on query parameter
-    const engines = engine === "youtube" ? ["youtube"] : ["ddg", "startpage"];
-    const promises = engines.map(eng => {
-      const endpoint = `/api/${eng}`;
-      return jsonFetch<SearchResult[]>(endpoint, {
-        query: { q: query },
-        signal,
-      }).then(results => pushColumn(eng, results));
-    });
-
-    Promise.allSettled(promises).then(() => {
-      isFetching.value = false;
-    });
+    jsonFetch<SearchResult[]>(scope.endpoint, {
+      query: { q: query },
+      signal,
+    })
+      .then((results) => {
+        pushColumn(scope.label, results);
+      })
+      .catch(() => {
+        if (!signal.aborted) {
+          columns.value = [];
+        }
+      })
+      .finally(() => {
+        if (!signal.aborted) {
+          isFetching.value = false;
+        }
+      });
 
     return () => abortController.abort();
-  }, [query]);
+  }, [query, scope.id]);
 
-  return { columns, query, isFetching, component };
+  return { columns, query, isFetching, component, scope };
 }
