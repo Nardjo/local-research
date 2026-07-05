@@ -7,16 +7,100 @@
 
 @layer base {
   :root {
+    color-scheme: dark;
     --color: #a9b1d6;
     --colorLight: #a9b1d63d;
+    --text: #c7d0f0;
     --background: #0d0e16;
+    --surface: #0d0e16e8;
     --backgroundLight: #191d2d;
     --visited: #bb9af7;
     --link: #9ece6a;
     --title: #7aa2f7;
     --border: #303246;
     --backgroundHover: #12141f;
+    --shadow: 0 8px 28px rgb(0 0 0 / 28%);
+    --headerBackground: linear-gradient(45deg, #2736a8bb, #131f78bb);
+    --headerBorder: rgb(255 255 255 / 8%);
+    --appItemBackground: linear-gradient(
+      145deg,
+      rgb(45 50 70 / 70%) 0%,
+      rgb(25 29 45 / 60%) 100%
+    );
+    --appItemBackgroundHover: linear-gradient(
+      145deg,
+      rgb(55 60 85 / 75%) 0%,
+      rgb(30 35 55 / 65%) 100%
+    );
+    --appAddBackground: linear-gradient(
+      145deg,
+      rgb(35 40 60 / 40%) 0%,
+      rgb(20 24 40 / 30%) 100%
+    );
+    --appAddBackgroundHover: linear-gradient(
+      145deg,
+      rgb(45 50 75 / 50%) 0%,
+      rgb(30 35 55 / 40%) 100%
+    );
+    --appCardBorder: rgb(255 255 255 / 12%);
+    --appCardBorderHover: rgb(169 177 214 / 40%);
+    --appCardShadow:
+      0 8px 32px rgb(0 0 0 / 30%), inset 0 1px 0 rgb(255 255 255 / 8%);
+    --appCardShadowHover:
+      0 16px 48px rgb(0 0 0 / 40%), 0 0 0 1px rgb(169 177 214 / 25%),
+      inset 0 1px 0 rgb(255 255 255 / 12%);
+    --appNameShadow: 0 1px 2px rgb(0 0 0 / 30%);
     --padding: 1rem;
+  }
+
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --color: #2d3748;
+    --colorLight: #1f6feb24;
+    --text: #1f2937;
+    --background: #f7f9fc;
+    --surface: #fffffff0;
+    --backgroundLight: #e8eef8;
+    --visited: #7c3aed;
+    --link: #087f5b;
+    --title: #155eef;
+    --border: #d6deeb;
+    --backgroundHover: #eef3fb;
+    --shadow: 0 10px 30px rgb(22 35 64 / 12%);
+    --headerBackground: linear-gradient(
+      45deg,
+      rgb(239 245 255 / 92%),
+      rgb(250 252 255 / 92%)
+    );
+    --headerBorder: rgb(31 41 55 / 10%);
+    --appItemBackground: linear-gradient(
+      145deg,
+      rgb(255 255 255 / 82%) 0%,
+      rgb(234 241 250 / 74%) 100%
+    );
+    --appItemBackgroundHover: linear-gradient(
+      145deg,
+      rgb(255 255 255 / 92%) 0%,
+      rgb(224 234 247 / 82%) 100%
+    );
+    --appAddBackground: linear-gradient(
+      145deg,
+      rgb(255 255 255 / 60%) 0%,
+      rgb(232 238 248 / 56%) 100%
+    );
+    --appAddBackgroundHover: linear-gradient(
+      145deg,
+      rgb(255 255 255 / 82%) 0%,
+      rgb(224 234 247 / 72%) 100%
+    );
+    --appCardBorder: rgb(31 41 55 / 12%);
+    --appCardBorderHover: rgb(21 94 239 / 30%);
+    --appCardShadow:
+      0 10px 30px rgb(22 35 64 / 12%), inset 0 1px 0 rgb(255 255 255 / 68%);
+    --appCardShadowHover:
+      0 16px 42px rgb(22 35 64 / 16%), 0 0 0 1px rgb(21 94 239 / 16%),
+      inset 0 1px 0 rgb(255 255 255 / 82%);
+    --appNameShadow: none;
   }
 
   body {

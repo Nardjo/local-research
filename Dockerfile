@@ -38,7 +38,7 @@ RUN apk add --no-cache \
     ttf-freefont
 
 # Install templ
-RUN go install github.com/a-h/templ/cmd/templ@latest
+RUN go install github.com/a-h/templ/cmd/templ@v0.3.943
 
 WORKDIR /app
 

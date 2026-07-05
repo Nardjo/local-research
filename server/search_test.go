@@ -14,6 +14,7 @@ func TestSearchHandler(t *testing.T) {
 	}{
 		{"!g+google", http.StatusFound},
 		{"!c+danser", http.StatusFound},
+		{"!ia", http.StatusOK},
 		{"Ma+recherche", http.StatusOK},
 	}
 
@@ -25,6 +26,27 @@ func TestSearchHandler(t *testing.T) {
 			SearchHandler(w, r)
 			if tt.wantCode != w.Code {
 				t.Errorf("Handler return wrong status code : got %v, expected %v", w.Code, tt.wantCode)
+			}
+		})
+	}
+}
+
+func TestReplaceFilterBangs(t *testing.T) {
+	tests := []struct {
+		q    string
+		want string
+	}{
+		{"!ia", "ia"},
+		{"!ia assistant", "ia assistant"},
+		{"assistant !ia", "assistant ia"},
+		{"!r golang", "site:reddit.com golang"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.q, func(t *testing.T) {
+			got := ReplaceFilterBangs(tt.q)
+			if got != tt.want {
+				t.Errorf("ReplaceFilterBangs() = %q, want %q", got, tt.want)
 			}
 		})
 	}

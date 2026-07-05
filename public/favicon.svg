@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Local Research">
+  <rect width="512" height="512" rx="96" fill="#101418"/>
+  <circle cx="224" cy="218" r="106" fill="none" stroke="#f6f1e8" stroke-width="54"/>
+  <path d="M306 300 406 400" fill="none" stroke="#f6f1e8" stroke-width="62" stroke-linecap="round"/>
+  <circle cx="258" cy="184" r="34" fill="#e7563d"/>
+</svg>

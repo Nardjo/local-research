@@ -38,3 +38,52 @@ export function WallpaperIcon({ size = 24 }: Props) {
     </svg>
   );
 }
+
+export function SystemThemeIcon({ size = 24 }: Props) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <rect
+        x="4"
+        y="5"
+        width="16"
+        height="11"
+        rx="2"
+        stroke="currentColor"
+        stroke-width="2"
+      />
+      <path
+        d="M9 20h6M12 16v4"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+      />
+    </svg>
+  );
+}
+
+export function SunIcon({ size = 24 }: Props) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" />
+      <path
+        d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+      />
+    </svg>
+  );
+}
+
+export function MoonIcon({ size = 24 }: Props) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path
+        d="M20 14.8A8 8 0 0 1 9.2 4a7 7 0 1 0 10.8 10.8Z"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linejoin="round"
+      />
+    </svg>
+  );
+}
